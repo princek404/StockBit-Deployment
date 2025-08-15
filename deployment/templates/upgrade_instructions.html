@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3><i class="bi bi-star-fill"></i> Upgrade to Premium</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <h4 class="mb-3">Unlock Advanced Features</h4>
+                <ul class="mb-4">
+                    <li><strong>Barcode Scanning:</strong> Scan product barcodes for quick inventory management</li>
+                    <li><strong>Multi-User Access:</strong> Add team members to your business account</li>
+                    <li><strong>Advanced Reports:</strong> Get detailed analytics and insights</li>
+                    <li><strong>Email Alerts:</strong> Receive notifications for low stock and sales milestones</li>
+                </ul>
+
+                <div class="premium-price text-center mb-4">
+                    <h2 class="text-primary">₦5000/month</h2>
+                    <p class="text-muted">One-time payment for continuous premium access</p>
+                </div>
+            </div>
+
+            <div class="payment-instructions">
+                <h4 class="mb-3">Payment Instructions</h4>
+                <ol class="mb-4">
+                    <li>Transfer <strong>₦5000</strong> to our account:</li>
+                    <li class="mb-2">
+                        <div class="alert alert-info">
+                            <strong>Account Number:</strong> {{ 7010698264 }}<br>
+                            <strong>Account Name:</strong> Prince Ekine<br>
+                            <strong>Bank:</strong> Opay
+                        </div>
+                    </li>
+                    <li>Take a screenshot of your payment confirmation</li>
+                    <li>Fill out the verification form with your payment details</li>
+                    <li>We'll verify your payment and activate your premium account</li>
+                </ol>
+
+                <div class="text-center">
+                    <a href="{{ url_for('upgrade_verify') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> Verify Payment
+                    </a>
+                </div>
+            </div>
+
+            <div class="support-info mt-5">
+                <h4 class="mb-3">Need Help?</h4>
+                <p>Contact us for any payment-related issues:</p>
+                <ul>
+                    <li><i class="bi bi-telephone"></i> Phone: {{ '07010698264' }}</li>
+                    <li><i class="bi bi-whatsapp"></i> WhatsApp: {{ '07072127949' }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">
+        <i class="bi bi-speedometer2"></i> Dashboard
+        <small class="text-muted">{{ current_user.business_name }}</small>
+    </h2>
+    
+    <div class="row">
+        <!-- Inventory Summary -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-clipboard-data"></i> Inventory Summary
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h3>{{ total_products }}</h3>
+                            <p class="text-muted">Total Products</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-primary">{{ (inventory_value)|currency }}</h3>
+                            <p class="text-muted">Inventory Value</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3 class="text-danger">{{ low_stock|length }}</h3>
+                            <p class="text-muted">Low Stock Items</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Low Stock Alert -->
+            {% if low_stock %}
+            <div class="card border-danger mb-4">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-exclamation-triangle"></i> Low Stock Alert
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Reorder Level</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in low_stock %}
+                                <tr class="stock-alert">
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.quantity }}</td>
+                                    <td>{{ product.reorder_level }}</td>
+                                    <td>
+                                        <a href="{{ url_for('edit_product', id=product.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            Restock
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-clock-history"></i> Recent Sales
+                </div>
+                <div class="card-body">
+                    {% if recent_sales %}
+                    <ul class="list-group list-group-flush">
+                        {% for sale in recent_sales %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ sale.product.name }}</strong><br>
+                                    <small>{{ sale.quantity }} x {{ sale.sale_price|currency }}</small>
+                                </div>
+                                <span class="text-success">{{ (sale.quantity * sale.sale_price)|currency }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                        <p class="mt-2">No recent sales</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Upgrade Banner -->
+            {% if not current_user.is_premium %}
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <i class="bi bi-star-fill"></i> Upgrade to Premium
+                </div>
+                <div class="card-body">
+                    <h5>Unlock Advanced Features</h5>
+                    <ul class="mb-3">
+                        <li>Barcode scanning</li>
+                        <li>Multi-user access</li>
+                        <li>Advanced reports</li>
+                        <li>Email/SMS alerts</li>
+                    </ul>
+                    <a href="{{ url_for('upgrade_instructions') }}" class="btn btn-warning w-100">
+                        <i class="bi bi-star-fill"></i> Upgrade Now - ₦5000/month
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

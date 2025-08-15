@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4"><i class="bi bi-credit-card"></i> Subscription Management</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Current Plan
+        </div>
+        <div class="card-body">
+            {% if current_user.is_premium and current_user.subscription_active %}
+            <div class="alert alert-success">
+                <h4><i class="bi bi-star-fill"></i> Premium Plan</h4>
+                <p>You're subscribed to StockBit Premium at ₦5000/month</p>
+                {% if current_user.premium_since %}
+                <p>Active since: {{ current_user.premium_since.strftime('%B %d, %Y') }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="alert alert-info">
+                <h5><i class="bi bi-info-circle"></i> Subscription Management</h5>
+                <p>To cancel your subscription, please contact our support team:</p>
+                <ul>
+                    <li><i class="bi bi-telephone"></i> Phone: {{ admin_phone }}</li>
+                    <li><i class="bi bi-whatsapp"></i> WhatsApp: {{ admin_whatsapp }}</li>
+                </ul>
+            </div>
+            {% elif current_user.is_premium and not current_user.subscription_active %}
+            <div class="alert alert-warning">
+                <h4><i class="bi bi-exclamation-triangle"></i> Subscription Canceled</h4>
+                <p>Your premium subscription has been canceled</p>
+                <p>Premium features will remain active until the end of your billing period</p>
+            </div>
+            {% else %}
+            <div class="alert alert-secondary">
+                <h4><i class="bi bi-box"></i> Free Plan</h4>
+                <p>You're currently on the free plan with basic features</p>
+                <a href="{{ url_for('upgrade_instructions') }}" class="btn btn-primary">
+                    <i class="bi bi-star-fill"></i> Upgrade to Premium - ₦5000/month
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            Premium Features
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 text-center mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="bi bi-upc-scan display-4 text-primary"></i>
+                            <h5>Barcode Scanning</h5>
+                            <p>Scan products with your phone camera</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="bi bi-people-fill display-4 text-primary"></i>
+                            <h5>Multi-User Access</h5>
+                            <p>Add team members to your account</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="bi bi-graph-up-arrow display-4 text-primary"></i>
+                            <h5>Advanced Reports</h5>
+                            <p>Profit analysis and sales forecasting</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="bi bi-bell display-4 text-primary"></i>
+                            <h5>Email/SMS Alerts</h5>
+                            <p>Get notified when stock is low</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

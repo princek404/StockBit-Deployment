@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h3><i class="bi bi-star-fill"></i> Premium Features</h3>
+        </div>
+        <div class="card-body">
+            {% if current_user.is_premium %}
+            <div class="alert alert-success">
+                <h4><i class="bi bi-check-circle"></i> Premium Account Active</h4>
+                <p class="mb-0">Your premium access was activated on {{ current_user.premium_since.strftime('%Y-%m-%d') }}</p>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h4><i class="bi bi-lock"></i> Premium Features Locked</h4>
+                <p>Upgrade to premium to unlock these advanced features</p>
+                <a href="{{ url_for('upgrade_instructions') }}" class="btn btn-warning">
+                    <i class="bi bi-star-fill"></i> Upgrade Now
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4><i class="bi bi-upc-scan"></i> Barcode Scanning</h4>
+                            <p>Quickly add products to your inventory by scanning their barcodes.
+                            Save time and reduce manual data entry errors.</p>
+                            {% if not current_user.is_premium %}
+                            <div class="premium-badge">PREMIUM</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4><i class="bi bi-people"></i> Multi-User Access</h4>
+                            <p>Add team members to your business account with different permission levels.
+                            Collaborate efficiently with your staff.</p>
+                            {% if not current_user.is_premium %}
+                            <div class="premium-badge">PREMIUM</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4><i class="bi bi-graph-up"></i> Advanced Reports</h4>
+                            <p>Access detailed business analytics including profit margins,
+                            sales trends, and inventory turnover rates.</p>
+                            {% if not current_user.is_premium %}
+                            <div class="premium-badge">PREMIUM</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4><i class="bi bi-envelope"></i> Email Alerts</h4>
+                            <p>Receive automatic notifications for low stock levels,
+                            high-selling products, and weekly sales summaries.</p>
+                            {% if not current_user.is_premium %}
+                            <div class="premium-badge">PREMIUM</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                {% if current_user.is_premium %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                {% else %}
+                <a href="{{ url_for('upgrade_instructions') }}" class="btn btn-warning btn-lg">
+                    <i class="bi bi-star-fill"></i> Unlock Premium Features
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

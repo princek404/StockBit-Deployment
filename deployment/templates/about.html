@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0"><i class="bi bi-info-circle"></i> About StockBit</h2>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-primary">Your Complete Inventory Management Solution</h3>
+                    <p class="lead">StockBit helps small businesses manage inventory, track sales, and monitor stock levels in real-time.</p>
+                    
+                    <div class="row mt-5">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h4><i class="bi bi-bullseye"></i> Our Mission</h4>
+                                    <p>To simplify inventory management for small businesses through intuitive tools and actionable insights.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h4><i class="bi bi-eye"></i> Our Vision</h4>
+                                    <p>To become the go-to inventory solution for 100,000+ small businesses by 2025.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mt-4">Core Features</h4>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-clipboard-data"></i> Inventory Tracking</h5>
+                                    <p>Monitor stock levels and get low-stock alerts</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-cash-coin"></i> Sales Management</h5>
+                                    <p>Record sales and track revenue</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-people"></i> Supplier Management</h5>
+                                    <p>Keep track of your suppliers</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mt-4">Premium Features</h4>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card premium-feature">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-upc-scan"></i> Barcode Scanning</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card premium-feature">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-people-fill"></i> Multi-User Access</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card premium-feature">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-graph-up-arrow"></i> Advanced Reports</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card premium-feature">
+                                <div class="card-body">
+                                    <h5><i class="bi bi-bell"></i> Email/SMS Alerts</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-5">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Get Started Today
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+:root {
+    --primary: #3A86FF;
+    --secondary: #2EC4B6;
+    --danger: #FF6B6B;
+    --warning: #FFD166;
+    --success: #06D6A0;
+}
+
+.bg-primary { background-color: var(--primary) !important; }
+.btn-primary { 
+    background-color: var(--primary); 
+    border-color: var(--primary); 
+}
+.btn-primary:hover {
+    background-color: #2a75e6;
+    border-color: #2a75e6;
+}
+
+.btn-outline-primary { 
+    color: var(--primary); 
+    border-color: var(--primary); 
+}
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+.text-primary { color: var(--primary) !important; }
+.text-success { color: var(--success) !important; }
+.text-danger { color: var(--danger) !important; }
+
+.badge-premium { 
+    background-color: var(--warning); 
+    color: black; 
+}
+
+.stock-alert { 
+    border-left: 4px solid var(--danger); 
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(58, 134, 255, 0.05);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-text {
+        display: none;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+}

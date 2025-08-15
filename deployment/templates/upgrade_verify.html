@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3><i class="bi bi-check-circle"></i> Verify Payment</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    {{ form.amount.label(class="form-label") }}
+                    {{ form.amount(class="form-control") }}
+                    <div class="form-text">Minimum amount: ₦5000</div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.transaction_id.label(class="form-label") }}
+                    {{ form.transaction_id(class="form-control") }}
+                    <div class="form-text">Find this in your transaction history</div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.screenshot.label(class="form-label") }}
+                    {{ form.screenshot(class="form-control") }}
+                    <div class="form-text">Upload a screenshot of your payment confirmation (PNG, JPG, max 2MB)</div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="terms" required>
+                        <label class="form-check-label" for="terms">
+                            I confirm that I've paid ₦5000 to {{ payment_account }} (Opay, Prince Ekine)
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-send"></i> Submit Verification
+                </button>
+            </form>
+            
+            <div class="mt-4 alert alert-info">
+                <h5><i class="bi bi-info-circle"></i> What happens next?</h5>
+                <p>After submission, our team will verify your payment. This usually takes less than 24 hours. 
+                We'll contact you at your registered phone number once your premium access is activated.</p>
+                <p class="mb-0"><strong>Contact us:</strong> {{ '07072127949' }} ('Call/WhatsApp')</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

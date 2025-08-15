@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4"><i class="bi bi-upc-scan"></i> Barcode Scanner</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Scan Product Barcode
+        </div>
+        <div class="card-body">
+            <div id="scanner-container" style="width: 100%; height: 300px; position: relative;">
+                <video id="barcode-video" width="100%" height="100%" style="border: 1px solid #ddd;"></video>
+                <canvas id="barcode-canvas" style="display: none;"></canvas>
+            </div>
+            
+            <div class="mt-3">
+                <button id="start-scanner" class="btn btn-primary">
+                    <i class="bi bi-play-circle"></i> Start Scanner
+                </button>
+                <button id="stop-scanner" class="btn btn-secondary" disabled>
+                    <i class="bi bi-stop-circle"></i> Stop Scanner
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            Scanned Product
+        </div>
+        <div class="card-body">
+            <div id="scan-result" class="text-center py-4">
+                <i class="bi bi-upc-scan display-1 text-muted"></i>
+                <p class="mt-3">Scan a barcode to see product details</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/quagga.min.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startBtn = document.getElementById('start-scanner');
+        const stopBtn = document.getElementById('stop-scanner');
+        const resultDiv = document.getElementById('scan-result');
+        let scannerActive = false;
+        
+        startBtn.addEventListener('click', function() {
+            startScanner();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        });
+        
+        stopBtn.addEventListener('click', function() {
+            Quagga.stop();
+            scannerActive = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+        
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#barcode-video'),
+                    constraints: {
+                        facingMode: "environment"
+                    }
+                },
+                decoder: {
+                    readers: ["ean_reader", "upc_reader", "code_128_reader"]
+                },
+                locate: true
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Error initializing scanner: ${err.message}
+                        </div>
+                    `;
+                    return;
+                }
+                scannerActive = true;
+                Quagga.start();
+            });
+            
+            Quagga.onDetected(function(result) {
+                if (!scannerActive) return;
+                
+                const code = result.codeResult.code;
+                resultDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Processing barcode: ${code}</p>
+                    </div>
+                `;
+                
+                // Send barcode to server
+                fetch('/process_barcode', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({barcode: code})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultDiv.innerHTML = `
+                            <div class="alert alert-success">
+                                <h4>${data.product.name}</h4>
+                                <p>Stock: ${data.product.quantity}</p>
+                                <p>Price: ${data.product.price}</p>
+                                <a href="/edit_product/${data.product.id}" class="btn btn-primary mt-2">
+                                    <i class="bi bi-pencil"></i> Edit Product
+                                </a>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                ${data.message}
+                                <a href="/add_product" class="btn btn-outline-primary mt-2">
+                                    <i class="bi bi-plus-circle"></i> Add New Product
+                                </a>
+                            </div>
+                        `;
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

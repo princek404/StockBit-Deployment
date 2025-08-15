@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4"><i class="bi bi-graph-up"></i> Business Reports</h2>
+    
+    <div class="row">
+        <!-- Sales Summary -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-cash-stack"></i> Sales Summary
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-3">
+                        <h3 class="text-success">{{ revenue|currency }}</h3>
+                        <p class="text-muted">Total Revenue</p>
+                    </div>
+                    
+                    {% if top_products %}
+                    <h5 class="mt-4">Top Selling Products</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-end">Units Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td class="text-end">{{ product.total_sold }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="bi bi-receipt" style="font-size: 2rem;"></i>
+                        <p class="mt-2">No sales data available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Summary -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-clipboard-data"></i> Inventory Summary
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-3">
+                        <h3 class="text-primary">{{ inventory_value|currency }}</h3>
+                        <p class="text-muted">Total Inventory Value</p>
+                    </div>
+                    
+                    {% if low_stock_count > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        {{ low_stock_count }} item{{ 's' if low_stock_count > 1 }} need restocking
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="mt-4">Inventory Distribution</h5>
+                    {% set low_stock_percent = (low_stock_count / total_products * 100) if total_products > 0 else 0 %}
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-danger" style="width: {{ low_stock_percent }}%">
+                            Low Stock: {{ low_stock_percent|round(1) }}%
+                        </div>
+                        <div class="progress-bar bg-success" style="width: {{ 100 - low_stock_percent }}%">
+                            In Stock: {{ (100 - low_stock_percent)|round(1) }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Premium Reports -->
+    {% if current_user.is_premium %}
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <i class="bi bi-star-fill"></i> Premium Reports
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <h4>Profit Margin</h4>
+                    <div class="display-4 text-{% if profit_margin > 0 %}success{% else %}danger{% endif %}">
+                        {{ profit_margin }}%
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h4>Best Selling</h4>
+                    <div class="display-4">{{ best_category }}</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h4>Stock Turnover</h4>
+                    <div class="display-4">{{ stock_turnover }}x</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
