@@ -6,11 +6,10 @@ services:
     startCommand: "gunicorn deployment.app:app --worker-tmp-dir /dev/shm --timeout 120"
     envVars:
       - key: DATABASE_URL
-        value: postgresql://postgres:Ritom2025$#$$@db.blrlykycdtphdxtonlja.supabase.co:5432/postgres
+        value: postgresql://postgres:Ritom2026$#@db.blrlykycdtphdxtonlja.supabase.co:5432/postgres
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
         value: 3.10.11
       - key: FLASK_APP
         value: app.py
-
