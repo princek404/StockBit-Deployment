@@ -152,59 +152,25 @@ class AdminUserForm(FlaskForm):
     is_admin = ('Administrator')
 
 # Initialize database
-with app.app_context():
-    # Create tables if they don't exist
-    db.create_all()
-    
-    # Check if the is_admin column exists
-    from sqlalchemy import inspect
-    inspector = inspect(db.engine)
-    
-    if 'user' in inspector.get_table_names():
-        columns = [col['name'] for col in inspector.get_columns('user')]
-        
-        if 'is_admin' not in columns:
-            print("Adding is_admin column to user table")
-            try:
-                # For PostgreSQL
-                if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql'):
-                    db.session.execute('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT false')
-                # For SQLite
-                else:
-                    # SQLite requires table recreation
-                    db.session.execute('''
-                        CREATE TABLE user_temp (
-                            id INTEGER PRIMARY KEY,
-                            username VARCHAR(80) UNIQUE NOT NULL,
-                            email VARCHAR(120) UNIQUE NOT NULL,
-                            password VARCHAR(120) NOT NULL,
-                            business_name VARCHAR(100) NOT NULL,
-                            created_at DATETIME,
-                            is_premium BOOLEAN,
-                            premium_since DATETIME,
-                            phone VARCHAR(20),
-                            subscription_active BOOLEAN
-                        )
-                    ''')
-                    db.session.execute('''
-                        INSERT INTO user_temp (id, username, email, password, business_name, created_at, 
-                            is_premium, premium_since, phone, subscription_active)
-                        SELECT id, username, email, password, business_name, created_at, 
-                            is_premium, premium_since, phone, subscription_active
-                        FROM "user"
-                    ''')
-                    db.session.execute('DROP TABLE "user"')
-                    db.session.execute('ALTER TABLE user_temp RENAME TO "user"')
-                    # Now add the is_admin column
-                    db.session.execute('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT false')
-                
-                db.session.commit()
-                print("Successfully added is_admin column")
-            except Exception as e:
-                print(f"Error adding is_admin column: {str(e)}")
-                db.session.rollback()
-    
-    print(f"Database initialized at: {app.config['SQLALCHEMY_DATABASE_URI']}")
+@app.before_first_request
+def initialize_database():
+    """Initialize database on first request"""
+    try:
+        db.create_all()
+        # Create initial admin user
+        if not User.query.filter_by(is_admin=True).first():
+            admin = User(
+                username='admin',
+                email='admin@example.com',
+                password=generate_password_hash('adminpassword'),
+                business_name='Admin Business',
+                is_admin=True
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("Admin user created")
+    except Exception as e:
+        print(f"Database initialization error: {str(e)}")
 # Helper functions
 def allowed_file(filename):
     return '.' in filename and \
