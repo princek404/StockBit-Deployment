@@ -152,25 +152,33 @@ class AdminUserForm(FlaskForm):
     is_admin = ('Administrator')
 
 # Initialize database
-@app.before_first_request
-def initialize_database():
-    """Initialize database on first request"""
+# Initialize database
+with app.app_context():
+    # Run migrations programmatically (if needed)
     try:
-        db.create_all()
-        # Create initial admin user
-        if not User.query.filter_by(is_admin=True).first():
-            admin = User(
-                username='admin',
-                email='admin@example.com',
-                password=generate_password_hash('adminpassword'),
-                business_name='Admin Business',
-                is_admin=True
-            )
-            db.session.add(admin)
-            db.session.commit()
-            print("Admin user created")
+        from flask_migrate import upgrade
+        upgrade()
+        print("Database migrations applied successfully")
     except Exception as e:
-        print(f"Database initialization error: {str(e)}")
+        print(f"Migration error: {str(e)}")
+        # Fallback to direct creation
+        db.create_all()
+        print("Database tables created directly")
+    
+    # Create admin user if not exists
+    if not User.query.filter_by(is_admin=True).first():
+        admin = User(
+            username='admin',
+            email='admin@example.com',
+            password=generate_password_hash('adminpassword'),
+            business_name='Admin Business',
+            is_admin=True
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("Admin user created")
+    
+    print(f"Database initialization complete at: {app.config['SQLALCHEMY_DATABASE_URI']}")
 # Helper functions
 def allowed_file(filename):
     return '.' in filename and \
