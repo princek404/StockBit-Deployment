@@ -14,7 +14,6 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf
 # App setup
 app = Flask(__name__)
 # Fixed secret keys (generate your own)
-app.config['SECRET_KEY'] = '79537b3e0a7a5a4a6d6b2a7d4f3a2c5a'
 app.config['WTF_CSRF_SECRET_KEY'] = '49537b3e0a7a5a4a6d6b2a7d4f3a2c5b'
 
 # CSRF configuration
