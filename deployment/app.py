@@ -663,5 +663,15 @@ def inject_common_data():
         'csrf_token': generate_csrf
     }
 
+# ... [rest of your code] ...
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Get port from environment variable or default to 5000 for local development
+    port = int(os.environ.get("PORT", 5000))
+    
+    # Run the application
+    app.run(
+        host='0.0.0.0',  # Bind to all network interfaces
+        port=port,        # Use the port specified by Render
+        debug=False       # Always set to False in production
+    )
