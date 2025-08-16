@@ -5,7 +5,7 @@ set -e
 # Create required directories
 mkdir -p instance
 mkdir -p uploads
-mkdir -p migrations/versions  # Ensure migrations directory exists
+mkdir -p migrations  # Ensure migrations directory exists
 
 # Install dependencies
 pip install -r requirements.txt
@@ -19,24 +19,33 @@ fi
 # Create new migration
 flask db migrate -m "Auto migration" || echo "Migration generation might have issues - continuing"
 
-# Apply migrations with error handling
-flask db upgrade || (
-    echo "Migration failed - attempting to resolve"
-    # Handle specific "duplicate column" error
-    if grep -q "duplicate column name: is_admin" logs.txt; then
-        echo "Column already exists - stamping head version"
-        flask db stamp head
-    fi
-    
-    # Final upgrade attempt
+# Apply migrations
+if flask db upgrade; then
+    echo "Migrations applied successfully"
+else
+    echo "Migration failed - stamping head version"
+    flask db stamp head
     flask db upgrade || echo "Final upgrade attempt failed"
-)
+fi
 
-# Fallback table creation
+# Verify tables exist
 python -c "
 from app import app, db
+from sqlalchemy import inspect
+
 with app.app_context():
-    try:
+    # Verify tables were created
+    inspector = inspect(db.engine)
+    required_tables = ['user', 'product', 'sale', 'supplier', 'payment_verification']
+    
+    missing_tables = [t for t in required_tables if t not in inspector.get_table_names()]
+    
+    if missing_tables:
+        print(f'ERROR: Missing tables: {missing_tables}')
+        exit(1)
+    else:
+        print('✓ All required tables exist in database')
+"
         db.create_all()
         print('Database tables verified')
     except Exception as e:
