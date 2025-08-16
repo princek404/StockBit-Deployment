@@ -168,10 +168,10 @@ with app.app_context():
     # Create admin user if not exists
     if not User.query.filter_by(is_admin=True).first():
         admin = User(
-            username='admin',
-            email='admin@example.com',
-            password=generate_password_hash('adminpassword'),
-            business_name='Admin Business',
+            username='Kala$',
+            email='princedagogoekine@gmail.com',
+            password=generate_password_hash('Ritom2025$'),
+            business_name='StockBit Admin',
             is_admin=True
         )
         db.session.add(admin)
