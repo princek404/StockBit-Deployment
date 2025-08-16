@@ -11,6 +11,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, validators, IntegerField, FloatField, TextAreaField, FileField
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf
+from sqlalchemy import inspect
 
 # App setup
 app = Flask(__name__)
@@ -68,7 +69,7 @@ class User(UserMixin, db.Model):
     premium_since = db.Column(db.DateTime)
     phone = db.Column(db.String(20))
     subscription_active = db.Column(db.Boolean, default=True)
-    is_admin = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)  # Add this line
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,7 +82,7 @@ class Product(db.Model):
     sale_price = db.Column(db.Float)
     last_updated = db.Column(db.DateTime, default=dt.utcnow)
     barcode = db.Column(db.String(50))
-
+    
 class Sale(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
@@ -152,7 +153,53 @@ class AdminUserForm(FlaskForm):
 
 # Initialize database
 with app.app_context():
+    # Create tables
     db.create_all()
+    
+    # Add is_admin column if it doesn't exist
+    inspector = inspect(db.engine)
+    if 'user' in inspector.get_table_names():
+        columns = [col['name'] for col in inspector.get_columns('user')]
+        if 'is_admin' not in columns:
+            try:
+                # For PostgreSQL
+                if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql'):
+                    db.session.execute('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT false')
+                # For SQLite
+                else:
+                    # SQLite doesn't support ALTER TABLE ADD COLUMN easily
+                    # We'll create a new table and migrate data
+                    db.session.execute('''
+                        CREATE TABLE user_temp (
+                            id INTEGER PRIMARY KEY,
+                            username VARCHAR(80) UNIQUE NOT NULL,
+                            email VARCHAR(120) UNIQUE NOT NULL,
+                            password VARCHAR(120) NOT NULL,
+                            business_name VARCHAR(100) NOT NULL,
+                            created_at DATETIME,
+                            is_premium BOOLEAN,
+                            premium_since DATETIME,
+                            phone VARCHAR(20),
+                            subscription_active BOOLEAN,
+                            is_admin BOOLEAN
+                        )
+                    ''')
+                    db.session.execute('''
+                        INSERT INTO user_temp (id, username, email, password, business_name, created_at, 
+                            is_premium, premium_since, phone, subscription_active, is_admin)
+                        SELECT id, username, email, password, business_name, created_at, 
+                            is_premium, premium_since, phone, subscription_active, false
+                        FROM "user"
+                    ''')
+                    db.session.execute('DROP TABLE "user"')
+                    db.session.execute('ALTER TABLE user_temp RENAME TO "user"')
+                
+                db.session.commit()
+                print("Added is_admin column to user table")
+            except Exception as e:
+                print(f"Error adding is_admin column: {str(e)}")
+                db.session.rollback()
+    
     print(f"Database initialized at: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 # Helper functions
