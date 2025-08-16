@@ -1,6 +1,7 @@
 import os
 import secrets
 from datetime import datetime as dt, timedelta
+from pathlib import Path
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
@@ -13,8 +14,10 @@ from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf
 
 # App setup
 app = Flask(__name__)
-# Fixed secret keys (generate your own)
-app.config['WTF_CSRF_SECRET_KEY'] = '49537b3e0a7a5a4a6d6b2a7d4f3a2c5b'
+
+# Use environment variables for secrets
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
+app.config['WTF_CSRF_SECRET_KEY'] = os.environ.get('WTF_CSRF_SECRET_KEY', secrets.token_hex(16))
 
 # CSRF configuration
 app.config['WTF_CSRF_ENABLED'] = True
@@ -22,21 +25,29 @@ app.config['WTF_CSRF_TIME_LIMIT'] = 3600  # 1 hour
 app.config['WTF_CSRF_SSL_STRICT'] = False  # Set to True in production with HTTPS
 
 # Get absolute path to the project directory
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = Path(__file__).parent.resolve()
 
+# Database configuration
 database_url = os.environ.get('DATABASE_URL', '')
 if database_url:
     if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+        database_url = "postgresql://" + database_url.split("://", 1)[1]
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # SQLite fallback for local development
+    db_path = basedir / 'instance' / 'stockbit.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'
+
+# Upload configuration
+app.config['UPLOAD_FOLDER'] = str(basedir / 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB max upload
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
 
 # Ensure directories exist
-os.makedirs(os.path.dirname(db_path), exist_ok=True)
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+(basedir / 'instance').mkdir(exist_ok=True)
+(basedir / 'uploads').mkdir(exist_ok=True)
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -57,7 +68,7 @@ class User(UserMixin, db.Model):
     premium_since = db.Column(db.DateTime)
     phone = db.Column(db.String(20))
     subscription_active = db.Column(db.Boolean, default=True)
-    is_admin = db.Column(db.Boolean, default=False)  # Add this line
+    is_admin = db.Column(db.Boolean, default=False)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -142,7 +153,7 @@ class AdminUserForm(FlaskForm):
 # Initialize database
 with app.app_context():
     db.create_all()
-    print(f"Database initialized at: {db_path}")
+    print(f"Database initialized at: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 # Helper functions
 def allowed_file(filename):
