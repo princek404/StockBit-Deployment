@@ -25,13 +25,11 @@ app.config['WTF_CSRF_SSL_STRICT'] = False  # Set to True in production with HTTP
 # Get absolute path to the project directory
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Database configuration
-db_path = os.path.join(basedir, 'instance', 'stockbit.db')
-# Replace database configuration with:
-if os.environ.get('DATABASE_URL'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+database_url = os.environ.get('DATABASE_URL', '')
+if database_url:
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB max upload
