@@ -5,6 +5,7 @@ Flask-Migrate
 Flask-WTF
 stripe
 gunicorn
+email_validator
 psycopg2-binary
 Werkzeug
 wtforms
