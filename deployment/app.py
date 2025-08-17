@@ -150,6 +150,11 @@ class AdminUserForm(FlaskForm):
     is_premium = ('Premium User')
     subscription_active = ('Subscription Active')
     is_admin = ('Administrator')
+class AdminCreateForm(FlaskForm):
+    username = StringField('Username', [validators.DataRequired()])
+    email = StringField('Email', [validators.Email()])
+    password = PasswordField('Temporary Password', [validators.DataRequired()])
+    submit = SubmitField('Create Admin')
 
 # Initialize database
 # Initialize database
@@ -623,6 +628,37 @@ def admin_users():
     
     users = User.query.all()
     return render_template('admin_users.html', users=users)
+
+@app.route('/create-admin', methods=['GET', 'POST'])
+@login_required
+def create_admin():
+    if not current_user.is_admin:
+        flash('Admin access required', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    form = AdminCreateForm()
+    if form.validate_on_submit():
+        # Check if user exists
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            flash('Username already exists', 'danger')
+            return redirect(url_for('create_admin'))
+        
+        # Create new admin user
+        new_admin = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=generate_password_hash(form.password.data),
+            business_name='Admin Account',
+            is_admin=True
+        )
+        db.session.add(new_admin)
+        db.session.commit()
+        
+        flash(f'Admin user {form.username.data} created!', 'success')
+        return redirect(url_for('admin_manage'))
+    
+    return render_template('create_admin.html', form=form)
 
 # Admin user management
 @app.route('/admin/edit_user/<int:user_id>', methods=['GET', 'POST'])
