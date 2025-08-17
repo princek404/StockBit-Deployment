@@ -629,36 +629,27 @@ def admin_users():
     users = User.query.all()
     return render_template('admin_users.html', users=users)
 
-@app.route('/create-admin', methods=['GET', 'POST'])
+@app.route('/admin/create_admin', methods=['GET', 'POST'])
 @login_required
 def create_admin():
     if not current_user.is_admin:
         flash('Admin access required', 'danger')
         return redirect(url_for('dashboard'))
     
-    form = AdminCreateForm()
-    if form.validate_on_submit():
-        # Check if user exists
-        user = User.query.filter_by(username=form.username.data).first()
+    if request.method == 'POST':
+        username = request.form['username']
+        user = User.query.filter_by(username=username).first()
+        
         if user:
-            flash('Username already exists', 'danger')
-            return redirect(url_for('create_admin'))
+            user.is_admin = True
+            db.session.commit()
+            flash(f'{username} is now an admin', 'success')
+        else:
+            flash('User not found', 'danger')
         
-        # Create new admin user
-        new_admin = User(
-            username=form.username.data,
-            email=form.email.data,
-            password=generate_password_hash(form.password.data),
-            business_name='Admin Account',
-            is_admin=True
-        )
-        db.session.add(new_admin)
-        db.session.commit()
-        
-        flash(f'Admin user {form.username.data} created!', 'success')
-        return redirect(url_for('admin_manage'))
+        return redirect(url_for('admin_users'))
     
-    return render_template('create_admin.html', form=form)
+    return render_template('create_admin.html')
 
 # Admin user management
 @app.route('/admin/edit_user/<int:user_id>', methods=['GET', 'POST'])
@@ -672,37 +663,44 @@ def admin_edit_user(user_id):
     form = AdminUserForm(obj=user)
     
     if form.validate_on_submit():
-        form.populate_obj(user)
-        db.session.commit()
-        flash('User updated successfully', 'success')
-        return redirect(url_for('admin_users'))
+        try:
+            # Update user fields
+            user.username = form.username.data
+            user.email = form.email.data
+            user.business_name = form.business_name.data
+            user.phone = form.phone.data
+            user.is_premium = form.is_premium.data
+            user.subscription_active = form.subscription_active.data
+            user.is_admin = form.is_admin.data
+            
+            db.session.commit()
+            flash('User updated successfully', 'success')
+            return redirect(url_for('admin_users'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating user: {str(e)}', 'danger')
     
     return render_template('admin_edit_user.html', form=form, user=user)
 
-@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@app.route('/remove-admin/<int:user_id>', methods=['POST'])
 @login_required
-def admin_delete_user(user_id):
+def remove_admin(user_id):
     if not current_user.is_admin:
-        flash('Admin access only', 'danger')
+        flash('Admin access required', 'danger')
         return redirect(url_for('dashboard'))
     
+    # Prevent removing yourself
+    if user_id == current_user.id:
+        flash('You cannot remove your own admin privileges', 'danger')
+        return redirect(url_for('admin_manage'))
+    
     user = User.query.get_or_404(user_id)
-    
-    # Prevent deleting yourself
-    if user.id == current_user.id:
-        flash('You cannot delete your own account!', 'danger')
-        return redirect(url_for('admin_users'))
-    
-    # Prevent deleting the last admin
-    if user.is_admin and User.query.filter_by(is_admin=True).count() == 1:
-        flash('Cannot delete the last admin account!', 'danger')
-        return redirect(url_for('admin_users'))
-    
-    db.session.delete(user)
+    user.is_admin = False
     db.session.commit()
-    flash('User deleted successfully', 'success')
-    return redirect(url_for('admin_users'))
-
+    
+    flash(f'Admin privileges removed from {user.username}', 'success')
+    return redirect(url_for('admin_manage'))
+    
 @app.route('/admin/cancel_subscription/<int:user_id>', methods=['POST'])
 @login_required
 def admin_cancel_subscription(user_id):
