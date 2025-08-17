@@ -54,12 +54,27 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Save Changes
-                </button>
-                <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Cancel
-                </a>
+                
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                    </div>
+                    
+                    {% if user.is_admin and user.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('remove_admin', user_id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Permanently remove admin privileges from {{ user.username }}?')">
+                            <i class="bi bi-person-dash"></i> Remove Admin
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
             </form>
         </div>
     </div>
