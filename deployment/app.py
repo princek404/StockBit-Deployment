@@ -147,9 +147,9 @@ class AdminUserForm(FlaskForm):
     email = StringField('Email', [validators.Email(), validators.Length(min=6, max=120)])
     business_name = StringField('Business Name', [validators.Length(min=2, max=100)])
     phone = StringField('Phone Number', [validators.Length(min=10, max=15)])
-    is_premium = ('Premium User')
-    subscription_active = ('Subscription Active')
-    is_admin = ('Administrator')
+    is_premium = BooleanField('Premium User')
+    subscription_active = BooleanField('Subscription Active')
+    is_admin = BooleanField('Administrator')
 class AdminCreateForm(FlaskForm):
     username = StringField('Username', [validators.DataRequired()])
     email = StringField('Email', [validators.Email()])
@@ -682,24 +682,30 @@ def admin_edit_user(user_id):
     
     return render_template('admin_edit_user.html', form=form, user=user)
 
-@app.route('/remove-admin/<int:user_id>', methods=['POST'])
+@app.route('/admin/remove_admin/<int:user_id>', methods=['POST'])
 @login_required
 def remove_admin(user_id):
     if not current_user.is_admin:
-        flash('Admin access required', 'danger')
+        flash('Admin access only', 'danger')
         return redirect(url_for('dashboard'))
     
-    # Prevent removing yourself
-    if user_id == current_user.id:
-        flash('You cannot remove your own admin privileges', 'danger')
-        return redirect(url_for('admin_manage'))
-    
     user = User.query.get_or_404(user_id)
+    
+    # Prevent removing yourself
+    if user.id == current_user.id:
+        flash('You cannot remove your own admin privileges!', 'danger')
+        return redirect(url_for('admin_edit_user', user_id=user_id))
+    
+    # Prevent removing the last admin
+    if user.is_admin and User.query.filter_by(is_admin=True).count() == 1:
+        flash('Cannot remove the last admin account!', 'danger')
+        return redirect(url_for('admin_edit_user', user_id=user_id))
+    
     user.is_admin = False
     db.session.commit()
     
     flash(f'Admin privileges removed from {user.username}', 'success')
-    return redirect(url_for('admin_manage'))
+    return redirect(url_for('admin_edit_user', user_id=user_id))
     
 @app.route('/admin/cancel_subscription/<int:user_id>', methods=['POST'])
 @login_required
