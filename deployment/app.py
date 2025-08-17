@@ -69,7 +69,7 @@ class User(UserMixin, db.Model):
     premium_since = db.Column(db.DateTime)
     phone = db.Column(db.String(20))
     subscription_active = db.Column(db.Boolean, default=True)
-    is_admin = db.Column(db.Boolean, default=False)  # Add this line
+    is_admin = db.Column(db.Boolean, default=False, nullable=False) 
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -153,17 +153,24 @@ class AdminUserForm(FlaskForm):
 
 # Initialize database
 # Initialize database
+# In your database initialization code
 with app.app_context():
-    # Run migrations programmatically (if needed)
-    try:
-        from flask_migrate import upgrade
-        upgrade()
-        print("Database migrations applied successfully")
-    except Exception as e:
-        print(f"Migration error: {str(e)}")
-        # Fallback to direct creation
-        db.create_all()
-        print("Database tables created directly")
+    # Create tables
+    db.create_all()
+    
+    # Add is_admin column if needed (using proper boolean)
+    inspector = inspect(db.engine)
+    if 'user' in inspector.get_table_names():
+        columns = [col['name'] for col in inspector.get_columns('user')]
+        if 'is_admin' not in columns:
+            try:
+                if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgresql'):
+                    # Use proper boolean syntax for PostgreSQL
+                    db.session.execute('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT FALSE')
+                db.session.commit()
+                print('Added is_admin column with proper boolean handling')
+            except Exception as e:
+                print(f'Error adding column: {e}')
     
     # Create admin user if not exists
     if not User.query.filter_by(is_admin=True).first():
@@ -178,7 +185,6 @@ with app.app_context():
         db.session.commit()
         print("Admin user created")
     
-    print(f"Database initialization complete at: {app.config['SQLALCHEMY_DATABASE_URI']}")
 # Helper functions
 def allowed_file(filename):
     return '.' in filename and \
