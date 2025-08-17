@@ -8,7 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, cur
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, validators, IntegerField, FloatField, TextAreaField, FileField
+from wtforms import StringField, PasswordField, validators, IntegerField, FloatField, TextAreaField, FileField, BooleanField
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf, validate_csrf
 from sqlalchemy import inspect
