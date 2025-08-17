@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-cd deployment
 
 # Create required directories
 mkdir -p instance
