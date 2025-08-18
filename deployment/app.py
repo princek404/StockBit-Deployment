@@ -682,6 +682,32 @@ def admin_edit_user(user_id):
     
     return render_template('admin_edit_user.html', form=form, user=user)
 
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def admin_delete_user(user_id):
+    if not current_user.is_admin:
+        flash('Admin access only', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting yourself
+    if user.id == current_user.id:
+        flash('You cannot delete your own account!', 'danger')
+        return redirect(url_for('admin_users'))
+    
+    # Prevent deleting the last admin
+    if user.is_admin and User.query.filter_by(is_admin=True).count() == 1:
+        flash('Cannot delete the last admin account!', 'danger')
+        return redirect(url_for('admin_users'))
+    
+    # Delete the user
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f'User {user.username} deleted successfully', 'success')
+    return redirect(url_for('admin_users'))
+
 @app.route('/admin/remove_admin/<int:user_id>', methods=['POST'])
 @login_required
 def remove_admin(user_id):
