@@ -34,3 +34,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }, false);
     });
 });
+
+// Add confirmation for delete actions
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.btn-outline-danger');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const username = this.closest('tr').querySelector('td:first-child').textContent;
+            if (!confirm(`Are you sure you want to delete ${username}? This cannot be undone!`)) {
+                e.preventDefault();
+            }
+        });
+    });
+});
